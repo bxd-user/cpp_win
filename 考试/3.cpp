@@ -22,11 +22,9 @@ ostream &operator<<(ostream &os, const Card &c)
     return os;
 }
 
-Card random_card(mt19937 &gen)
+bool operator<(const Card &a, const Card &b)
 {
-    static uniform_int_distribution<> rank_dis(0, 12);
-    static uniform_int_distribution<> suit_dis(0, 3);
-    return {rank_dis(gen), suit_dis(gen)};
+    return (a.rk == b.rk) ? (a.col < b.col) : (a.rk < b.rk);
 }
 
 int main()
@@ -34,20 +32,26 @@ int main()
     random_device rd;
     mt19937 gen(rd());
 
-    vector<Card> cards;
-    cards.reserve(5);
-    for (int i = 0; i < 5; ++i)
+    vector<Card> deck;
+    deck.reserve(52);
+    for (int col = 0; col < 4; ++col)
     {
-        cards.emplace_back(random_card(gen));
+        for (int rk = 0; rk < 13; ++rk)
+        {
+            deck.push_back({rk, col});
+        }
     }
+
+    shuffle(deck.begin(), deck.end(), gen);
+
+    vector<Card> cards(deck.begin(), deck.begin() + 5);
 
     for (const auto &c : cards)
     {
         cout << c << '\n';
     }
 
-    sort(cards.begin(), cards.end(), [](const Card &a, const Card &b)
-         { return (a.rk == b.rk) ? (a.col < b.col) : (a.rk < b.rk); });
+    sort(cards.begin(), cards.end(), less<Card>());
 
     cout << '\n';
     for (const auto &c : cards)
